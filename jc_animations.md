@@ -31,7 +31,7 @@ fun ColorAnimationExample() {
 
 <img src="./Resources/Animations/animateColorAsState.gif" alt="Анимация цвета" width="300">
 
-
+---
 
 ### 2. `animateDpAsState`
 Этот пример изменяет положение объекта по вертикали.
@@ -90,6 +90,8 @@ fun RotationAnimationExample() {
 - При клике объект вращается на 360 градусов.  
 
 <img src="./Resources/Animations/animateFloatAsState.gif" alt="Анимация цвета" width="300">
+
+---
 
 Также для параметра `animationSpec` можно устанавливать значения в виде набора ключевых кадров при помощи функции `keyframes` 
 
@@ -157,6 +159,8 @@ fun VisibilityAnimationExample() {
 - `fadeIn()` и `fadeOut()` создают эффект плавного изменения прозрачности.  
 
 <img src="./Resources/Animations/AnimatedVisibility.gif" alt="Анимация цвета" width="300">
+
+---
 
 Помимо `fadeIn()` и `fadeOut()` можно использовать и другие анимации входа и выхода, а также их комбинации
 
