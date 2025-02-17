@@ -1,9 +1,13 @@
-Вот несколько примеров простых компонентов на Jetpack Compose, демонстрирующих основные виды анимации:  
+# Анимации
 
+Для применения анимации в приложении Jetpack Compose предоставляет специальный API - Animation API. Этот API состоит из классов и функций, которые предоставляют широкие возможности по созданию анимации. Рассмотрим ключевые функции и классы Animation API.
+
+Так, Compose Animation API предоставляет ряд анимаций состояния компонентов. В частности, это функции анимации для значений типов Bounds, Color, Dp, Float, Int, IntOffset, IntSize, Offset, Rect и Size. Подобные функции покрывают большинство потребностей в анимации компонентов.
 ## Анимации изменения состояния (animate*AsState)
 
 В данную группу анимаций входит набор методов, который позволяет изменять значения переменных, таких как цвет, размер, отсупы и др. в зависимости состояния объектов
 
+В функции передается целевое (конечное) значение, которое должно получить состояние. И функции анимируют переход от текущего значения к целевому.
 ### 1. `animateColorAsState`
 Эта анимация изменяет цвет элемента плавно при смене состояния.
 
@@ -93,6 +97,87 @@ fun RotationAnimationExample() {
 
 ---
 
+В качестве значения функция `easing` примнимает одно из значений, определяющих течение анимации
+1. LinearEasing
+2. FastOutSlowInEasing
+3. FastOutLinearEasing
+4. LinearOutSlowInEasing
+5. CubicBezierEasing
+
+<img src="./Resources/Animations/easing.gif" alt="Анимация цвета" width="500">
+
+```kotlin
+@Composable
+fun EasingAnimationExample() {
+    var moved by remember { mutableStateOf(false) }
+    val offsetLinear by animateDpAsState(
+        targetValue = if (moved) 100.dp else (-100).dp,
+        animationSpec = tween(durationMillis = 5000, easing = LinearEasing)
+    )
+    val offsetLinearOutSlowIn by animateDpAsState(
+        targetValue = if (moved) 100.dp else (-100).dp,
+        animationSpec = tween(durationMillis = 5000, easing = LinearOutSlowInEasing)
+    )
+    val offsetFastOutLinearIn by animateDpAsState(
+        targetValue = if (moved) 100.dp else (-100).dp,
+        animationSpec = tween(durationMillis = 5000, easing = FastOutLinearInEasing)
+    )
+    val offsetFastOutSlowIn by animateDpAsState(
+        targetValue = if (moved) 100.dp else (-100).dp,
+        animationSpec = tween(durationMillis = 5000, easing = FastOutSlowInEasing)
+    )
+    val offsetCubicBezier by animateDpAsState(
+        targetValue = if (moved) 100.dp else (-100).dp,
+        animationSpec = tween(durationMillis = 5000, easing = CubicBezierEasing(0f, 1f, 0.5f,1f))
+    )
+    Row {
+        EasingBox(
+            text = "1",
+            offset = offsetLinear,
+            modifier = Modifier.clickable { moved = !moved }
+        )
+        EasingBox(
+            text = "2",
+            offset = offsetFastOutSlowIn,
+            modifier = Modifier.clickable { moved = !moved }
+        )
+        EasingBox(
+            text = "3",
+            offset = offsetFastOutLinearIn,
+            modifier = Modifier.clickable { moved = !moved }
+        )
+        EasingBox(
+            text = "4",
+            offset = offsetLinearOutSlowIn,
+            modifier = Modifier.clickable { moved = !moved }
+        )
+        EasingBox(
+            text = "5",
+            offset = offsetCubicBezier,
+            modifier = Modifier.clickable { moved = !moved }
+        )
+    }
+}
+@Composable
+fun EasingBox(text:String, offset: Dp, modifier: Modifier){
+    Text(
+        text = text,
+        textAlign = TextAlign.Center,
+        fontSize = 30.sp,
+        modifier = Modifier
+            .size(100.dp)
+            .offset(y = offset)
+            .background(Color.Green)
+            .border(1.dp, color = Color.Black)
+            .then(modifier)
+    )
+}
+```
+
+
+
+---
+
 Также для параметра `animationSpec` можно устанавливать значения в виде набора ключевых кадров при помощи функции `keyframes` 
 
 ```kotlin
@@ -164,6 +249,38 @@ fun VisibilityAnimationExample() {
 
 Помимо `fadeIn()` и `fadeOut()` можно использовать и другие анимации входа и выхода, а также их комбинации
 
+- `expandHorizontally()`: содержимое отображается с использованием метода горизонтального отсечения. Позволяет указать, какая часть контента изначально отображается до начала анимации.
+
+- `expandVertically()`: содержимое отображается с использованием техники вертикального отсечения. Позволяет указать, какая часть контента изначально отображается до начала анимации.
+
+- `expandIn()`: содержимое отображается с использованием методов горизонтального и вертикального отсечения. Позволяет указать, какая часть контента изначально отображается до начала анимации.
+
+- `fadeIn()`: постепенно делает прозрачное содержимое непрозрачным. Начальная прозрачность может быть объявлена с использованием значения с плавающей запятой от 0 до 1.0. Значение по умолчанию - 0.
+
+- `fadeOut()`: постепенно делает непрозрачное содержимое прозрачным (невидимым). Целевая прозрачность перед исчезновением содержимого может быть объявлена с использованием значения с плавающей запятой от 0 до 1.0. Значение по умолчанию - 0.
+
+- `scaleIn()`: содержимое постепенно увеличивается. По умолчанию содержимое начинается с нулевого размера и расширяется до полного размера, хотя это значение по умолчанию можно изменить, указав начальное значение масштаба как плавающее значение от 0 до 1.0.
+
+- `scaleOut()`: содержимое постепенно уменьшается и в конце полностью исчезает. По умолчанию целевой масштаб равен 0, но его можно настроить с использованием плавающего значения от 0 до 1.0.
+
+- `shrinkHorizontally()`: компонент постепенно сживается по горизонтали, пока польностью не исчезнет.
+
+- `shrinkVertically()`: компонент постепенно сживается по вертикали, пока польностью не исчезнет.
+
+- `shrinkOut()`: ккомпонент постепенно сживается по горизонтали и вертикали, пока польностью не исчезнет.
+
+- `slideInHorizontally()`: содержимое перемещается в область обзора вдоль горизонтальной оси
+
+- `slideInVertically()`: содержимое перемещается в область обзора вдоль вертикальной оси.
+
+- `slideIn()`: содержимое появляется в области обзора под настраиваемым углом, определяемым через начальное значение смещения.
+
+- `slideOut()`: содержимое исчезает из поля зрения под настраиваемым углом, определяемым через начальное значение смещения.
+
+- `slideOutHorizontally()`: содержимое выходит из области обзора вдоль горизонтальной оси.
+
+- `slideOutVertically()`: содержимое выходит из поля зрения вдоль вертикальной оси
+
 **[Больше примеров базовых анимаций входа и выхода](https://developer.android.com/develop/ui/compose/animation/composables-modifiers#enter-exit-transition)**
 
 ```kotlin
@@ -203,6 +320,12 @@ fun VisibilityAnimationExample() {
 
 ## Анимация с ключевыми кадрами (`updateTransition`)
 Позволяет создавать сложные анимации с несколькими параметрами.
+
+Иногда возникает необходимость запустить не одну, а сразу несколько анимаций. Для этой цели в Jetpack Compose применяется Transition, к которому можно добавить несколько дочерних анимаций и запустить их одновременно.
+
+Для создания объекта который позволяет запускать несколько анимаций параллельно на основе одного целевого состояния используется функция updateTransition(). Эта функция передает целевое состояние и возвращает объект Transition, к которому можно добавить несколько дочерних анимаций.
+
+В качестве обязательного параметра targetState функции надо передать целевое состояние. Когда целевое состояние изменится, объект Transition запустит все дочерние анимации одновременно.
 
 ```kotlin
 @Composable
