@@ -29,6 +29,15 @@ import retrofit2.Call
 interface ApiService {
     @GET("posts")
     suspend fun getPosts(): List<Post> //определяем функцию получения данных из апи
+
+    @POST("posts")
+    suspend fun createPost(@Body post: Post): Post //определяем функцию создания данных в апи
+
+    @PUT("posts/{id}")
+    suspend fun updatePost(@Path("id") id: Int, @Body post: Post): Post //определяем функцию обновления данных в апи
+
+    @DELETE("posts/{id}")
+    suspend fun deletePost(@Path("id") id: Int) //определяем функцию удаления данных в апи
 }
 ```
 
@@ -89,6 +98,39 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 _posts.value = RetrofitInstance.api.getPosts()          //асинхронно получаем данные
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun addPost(post: Post) {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.api.createPost(post)          //асинхронно создадаем пост
+                fetchPosts()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updatePost(id: Int, post: Post) {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.api.updatePost(id, post)       //асинхронно обновим пост
+                fetchPosts()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deletePost(id: Int) {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.api.deletePost(id)          //асинхронно удалим пост
+                fetchPosts()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
