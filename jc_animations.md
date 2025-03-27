@@ -208,6 +208,53 @@ fun ScaleKeyframesAnimationExample() {
 
 <img src="./Resources/Animations/keyframes.gif" alt="Анимация цвета" width="300">
 
+## Анимации Animatable
+`Animatable` это значение, которое автоматически анимируется при изменении значения с помощью `animateTo`. Если `animateTo` вызывается во время текущей анимации изменения значения, новая анимация будет переходить `Animatable` от текущего значения (т. е. значения в момент прерывания) к новому `targetValue`.
+
+При определении такой анимации задается специальный конвертор, преобразующий значение в вектор анимации
+
+При этом вызов animateTo должен осуществлятся в контексте корутины, так как данные анимации обрабатываются отдельно и имеют возможность прерывания.
+
+```kotlin
+@Composable
+fun OffsetAnimation() {
+    val animatedOffset = remember { Animatable(initialValue = Offset(0f,0f), typeConverter = Offset.VectorConverter) }
+
+    Box(
+        Modifier.fillMaxSize().background(Color(0xffb99aff)).pointerInput(Unit) {
+            coroutineScope {
+                while (true) {
+                    val offset = awaitPointerEventScope { awaitFirstDown().position }
+                    // Launch a new coroutine for animation so the touch detection thread is not
+                    // blocked.
+                    launch {
+                        // Animates to the pressed position, with the given animation spec.
+                        animatedOffset.animateTo(
+                            offset,
+                            animationSpec = spring(stiffness = Spring.StiffnessLow)
+                        )
+                    }
+                }
+            }
+        }
+    ) {
+        Text("Tap anywhere", Modifier.align(Alignment.Center))
+        Box(
+            Modifier.offset {
+                // Use the animated offset as the offset of the Box.
+                IntOffset(
+                    animatedOffset.value.x.roundToInt(),
+                    animatedOffset.value.y.roundToInt()
+                )
+            }
+                .size(40.dp)
+                .background(Color(0xff3c1361), CircleShape)
+        )
+    }
+}
+```
+<img src="./Resources/Animations/animatable.gif" alt="Анимация перемещения" width="300">
+
 ## Анимация появления/исчезновения (`AnimatedVisibility`)
 Объект плавно появляется и исчезает при нажатии кнопки.
 Важно отметить, что в качестве одного из параметров данная функция принимает объект, который необходимо анимировать
@@ -354,3 +401,52 @@ fun TransitionAnimationExample() {
 - При клике изменяются оба параметра.  
 
 <img src="./Resources/Animations/updateTransition.gif" alt="Анимация цвета" width="300">
+
+## Бесконечная анимация (`infiniteTransition`)
+
+Иногда требуется создать анимацию, которая будет выполняться бесконечно, например, для эффектов мерцания, пульсации или циклического движения. В Jetpack Compose для этой цели используется `InfiniteTransition`, позволяющий запускать несколько бесконечных анимаций одновременно.
+
+Для создания такого объекта применяется функция `rememberInfiniteTransition()`, которая возвращает экземпляр `InfiniteTransition`. К этому объекту можно добавить несколько анимаций, которые будут выполняться в цикле без остановки.
+
+В качестве базовой функции для анимации используется `animateFloat`, `animateValue` или другие аналогичные функции, принимающие параметры `tween`, `keyframes` или `repeatable`, позволяющие гибко настроить поведение бесконечной анимации.
+
+Таким образом, `InfiniteTransition` идеально подходит для создания динамических визуальных эффектов, работающих на протяжении всего времени существования композиции.
+
+```kotlin
+@Composable
+fun InfinitelyPulsingHeart() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val scale by
+    infiniteTransition.animateFloat(
+        initialValue = 3f,
+        targetValue = 6f,
+        animationSpec =
+        infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+    val color by
+    infiniteTransition.animateColor(
+        initialValue = Color.Red,
+        targetValue = Color(0xff800000),
+        animationSpec =
+        infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(Modifier.fillMaxSize()) {
+        Icon(
+            Icons.Filled.Favorite,
+            contentDescription = null,
+            modifier =
+            Modifier.align(Alignment.Center).graphicsLayer(scaleX = scale, scaleY = scale),
+            tint = color
+        )
+    }
+}
+```
+
+<img src="./Resources/Animations/infinit.gif" alt="Бесконечная анимация" width="300">
